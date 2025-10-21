@@ -1,80 +1,143 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-int main() {
+/* função abs simples */
+int abs_v(int x) { return x < 0 ? -x : x; }
+
+/* limpa buffer de entrada */
+void clear_input_buffer(void) {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) {}
+}
+
+int main(void) {
     int opcao;
-    char continuar;
+    int linha, coluna;
+    char continuar = 's';
 
+    /* loop principal: do-while exigido */
     do {
         printf("=== Simulador de Movimentacao de Pecas de Xadrez ===\n");
         printf("1 - Torre\n");
         printf("2 - Bispo\n");
         printf("3 - Rainha\n");
         printf("4 - Cavalo\n");
-        printf("Escolha uma peca (1-4): ");
-        scanf("%d", &opcao);
+        printf("5 - Rei\n");
+        printf("6 - Peao\n");
+        printf("Escolha uma peca (1-6): ");
 
-        int x, y;
-        printf("\nDigite a posicao atual da peca (linha e coluna de 1 a 8): ");
-        scanf("%d %d", &x, &y);
+        /* validação da opcao usando while */
+        while (scanf("%d", &opcao) != 1 || opcao < 1 || opcao > 6) {
+            printf("Opcao invalida. Digite um numero entre 1 e 6: ");
+            clear_input_buffer();
+        }
+        clear_input_buffer();
 
-        printf("\nMovimentos possiveis:\n");
+        /* posição atual (linha, coluna) - 1..8 */
+        printf("Digite a posicao atual da peca (linha coluna) de 1 a 8: ");
+        while (scanf("%d %d", &linha, &coluna) != 2 || linha < 1 || linha > 8 || coluna < 1 || coluna > 8) {
+            printf("Posicao invalida. Digite linha e coluna (1 a 8): ");
+            clear_input_buffer();
+        }
+        clear_input_buffer();
+
+        printf("\nMovimentos possiveis a partir de (%d,%d):\n", linha, coluna);
+
+        int i, j;
 
         switch (opcao) {
-            case 1: // Torre
-                printf("Torre se move em linha reta:\n");
-                for (int i = 1; i <= 8; i++) {
-                    if (i != x)
-                        printf("(%d,%d) ", i, y); // mesma coluna
+            case 1: /* Torre */
+                for (i = 1; i <= 8; i++) {
+                    if (i != linha) printf("(%d,%d) ", i, coluna);
                 }
-                printf("\n");
-                for (int j = 1; j <= 8; j++) {
-                    if (j != y)
-                        printf("(%d,%d) ", x, j); // mesma linha
+                for (j = 1; j <= 8; j++) {
+                    if (j != coluna) printf("(%d,%d) ", linha, j);
                 }
                 break;
 
-            case 2: // Bispo
-                printf("Bispo se move nas diagonais:\n");
-                for (int i = 1; i <= 8; i++) {
-                    for (int j = 1; j <= 8; j++) {
-                        if (i != x && j != y && (i - x == j - y || i - x == y - j))
+            case 2: /* Bispo */
+                for (i = 1; i <= 8; i++) {
+                    for (j = 1; j <= 8; j++) {
+                        if (!(i == linha && j == coluna) && abs_v(i - linha) == abs_v(j - coluna))
                             printf("(%d,%d) ", i, j);
                     }
                 }
                 break;
 
-            case 3: // Rainha
-                printf("Rainha combina movimentos da torre e do bispo:\n");
-                for (int i = 1; i <= 8; i++) {
-                    for (int j = 1; j <= 8; j++) {
-                        if ((i == x && j != y) || (j == y && i != x) || (i - x == j - y || i - x == y - j))
+            case 3: /* Rainha */
+                for (i = 1; i <= 8; i++) {
+                    for (j = 1; j <= 8; j++) {
+                        if (i == linha && j == coluna) continue;
+                        if (i == linha || j == coluna || abs_v(i - linha) == abs_v(j - coluna))
                             printf("(%d,%d) ", i, j);
                     }
                 }
                 break;
 
-            case 4: // Cavalo
-                printf("Cavalo se move em L:\n");
-                int movimentos[8][2] = {
-                    {x+2, y+1}, {x+2, y-1},
-                    {x-2, y+1}, {x-2, y-1},
-                    {x+1, y+2}, {x+1, y-2},
-                    {x-1, y+2}, {x-1, y-2}
+            case 4: /* Cavalo */
+            {
+                int moves[8][2] = {
+                    {linha + 2, coluna + 1}, {linha + 2, coluna - 1},
+                    {linha - 2, coluna + 1}, {linha - 2, coluna - 1},
+                    {linha + 1, coluna + 2}, {linha + 1, coluna - 2},
+                    {linha - 1, coluna + 2}, {linha - 1, coluna - 2}
                 };
-                for (int i = 0; i < 8; i++) {
-                    int nx = movimentos[i][0];
-                    int ny = movimentos[i][1];
-                    if (nx >= 1 && nx <= 8 && ny >= 1 && ny <= 8)
-                        printf("(%d,%d) ", nx, ny);
+                for (i = 0; i < 8; i++) {
+                    int nl = moves[i][0], nc = moves[i][1];
+                    if (nl >= 1 && nl <= 8 && nc >= 1 && nc <= 8)
+                        printf("(%d,%d) ", nl, nc);
                 }
+            }
+                break;
+
+            case 5: /* Rei */
+                for (i = linha - 1; i <= linha + 1; i++) {
+                    for (j = coluna - 1; j <= coluna + 1; j++) {
+                        if (i == linha && j == coluna) continue;
+                        if (i >= 1 && i <= 8 && j >= 1 && j <= 8)
+                            printf("(%d,%d) ", i, j);
+                    }
+                }
+                break;
+
+            case 6: /* Peao */
+            {
+                int cor;
+                printf("Cor do peao? 1 - Branco (avanca para linha+), 2 - Preto (avanca para linha-): ");
+                while (scanf("%d", &cor) != 1 || (cor != 1 && cor != 2)) {
+                    printf("Opcao invalida. Digite 1 para branco ou 2 para preto: ");
+                    clear_input_buffer();
+                }
+                clear_input_buffer();
+
+                if (cor == 1) { /* branco: avanca linha+1 */
+                    if (linha + 1 <= 8) printf("(%d,%d) ", linha + 1, coluna);
+                    /* passo duplo se estiver na linha inicial 2 */
+                    if (linha == 2 && linha + 2 <= 8) printf("(%d,%d) ", linha + 2, coluna);
+                    /* capturas diagonais */
+                    if (linha + 1 <= 8 && coluna - 1 >= 1) printf("(%d,%d) ", linha + 1, coluna - 1);
+                    if (linha + 1 <= 8 && coluna + 1 <= 8) printf("(%d,%d) ", linha + 1, coluna + 1);
+                } else { /* preto: avanca linha-1 */
+                    if (linha - 1 >= 1) printf("(%d,%d) ", linha - 1, coluna);
+                    /* passo duplo se estiver na linha inicial 7 */
+                    if (linha == 7 && linha - 2 >= 1) printf("(%d,%d) ", linha - 2, coluna);
+                    /* capturas diagonais */
+                    if (linha - 1 >= 1 && coluna - 1 >= 1) printf("(%d,%d) ", linha - 1, coluna - 1);
+                    if (linha - 1 >= 1 && coluna + 1 <= 8) printf("(%d,%d) ", linha - 1, coluna + 1);
+                }
+            }
                 break;
 
             default:
-                printf("Opcao invalida!\n");
+                printf("Erro inesperado.\n");
         }
 
         printf("\n\nDeseja simular outra peca? (s/n): ");
-        scanf(" %c", &continuar);
+        while (scanf(" %c", &continuar) != 1 || (continuar != 's' && continuar != 'S' && continuar != 'n' && continuar != 'N')) {
+            printf("Resposta invalida. Digite 's' para sim ou 'n' para nao: ");
+            clear_input_buffer();
+        }
+        clear_input_buffer();
         printf("\n");
 
     } while (continuar == 's' || continuar == 'S');
