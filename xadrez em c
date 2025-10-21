@@ -1,0 +1,84 @@
+#include <stdio.h>
+
+int main() {
+    int opcao;
+    char continuar;
+
+    do {
+        printf("=== Simulador de Movimentacao de Pecas de Xadrez ===\n");
+        printf("1 - Torre\n");
+        printf("2 - Bispo\n");
+        printf("3 - Rainha\n");
+        printf("4 - Cavalo\n");
+        printf("Escolha uma peca (1-4): ");
+        scanf("%d", &opcao);
+
+        int x, y;
+        printf("\nDigite a posicao atual da peca (linha e coluna de 1 a 8): ");
+        scanf("%d %d", &x, &y);
+
+        printf("\nMovimentos possiveis:\n");
+
+        switch (opcao) {
+            case 1: // Torre
+                printf("Torre se move em linha reta:\n");
+                for (int i = 1; i <= 8; i++) {
+                    if (i != x)
+                        printf("(%d,%d) ", i, y); // mesma coluna
+                }
+                printf("\n");
+                for (int j = 1; j <= 8; j++) {
+                    if (j != y)
+                        printf("(%d,%d) ", x, j); // mesma linha
+                }
+                break;
+
+            case 2: // Bispo
+                printf("Bispo se move nas diagonais:\n");
+                for (int i = 1; i <= 8; i++) {
+                    for (int j = 1; j <= 8; j++) {
+                        if (i != x && j != y && (i - x == j - y || i - x == y - j))
+                            printf("(%d,%d) ", i, j);
+                    }
+                }
+                break;
+
+            case 3: // Rainha
+                printf("Rainha combina movimentos da torre e do bispo:\n");
+                for (int i = 1; i <= 8; i++) {
+                    for (int j = 1; j <= 8; j++) {
+                        if ((i == x && j != y) || (j == y && i != x) || (i - x == j - y || i - x == y - j))
+                            printf("(%d,%d) ", i, j);
+                    }
+                }
+                break;
+
+            case 4: // Cavalo
+                printf("Cavalo se move em L:\n");
+                int movimentos[8][2] = {
+                    {x+2, y+1}, {x+2, y-1},
+                    {x-2, y+1}, {x-2, y-1},
+                    {x+1, y+2}, {x+1, y-2},
+                    {x-1, y+2}, {x-1, y-2}
+                };
+                for (int i = 0; i < 8; i++) {
+                    int nx = movimentos[i][0];
+                    int ny = movimentos[i][1];
+                    if (nx >= 1 && nx <= 8 && ny >= 1 && ny <= 8)
+                        printf("(%d,%d) ", nx, ny);
+                }
+                break;
+
+            default:
+                printf("Opcao invalida!\n");
+        }
+
+        printf("\n\nDeseja simular outra peca? (s/n): ");
+        scanf(" %c", &continuar);
+        printf("\n");
+
+    } while (continuar == 's' || continuar == 'S');
+
+    printf("Programa encerrado.\n");
+    return 0;
+}
